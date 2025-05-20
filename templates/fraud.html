@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Analysis Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #2c3e50;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary-color);
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(52, 152, 219, 0.2), rgba(46, 204, 113, 0.2));
+            z-index: 1;
+        }
+
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border: none;
+            text-align: center;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stats-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .stats-label {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            opacity: 0.8;
+        }
+
+        .graph-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border: none;
+            height: 100%;
+        }
+
+        .graph-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .graph-title {
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .graph-container {
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+            padding: 1rem;
+            background: rgba(248, 249, 250, 0.5);
+            border-radius: 15px;
+            overflow-x: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Force Plotly graphs to fit their container */
+        .graph-container > div,
+        .graph-container > iframe,
+        .graph-container > svg,
+        .graph-container .plotly-graph-div {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100%;
+            max-height: 100%;
+            min-width: 0;
+            min-height: 0;
+            box-sizing: border-box;
+        }
+        .graph-container .main-svg {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .dashboard-nav {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .nav-pills .nav-link {
+            color: var(--primary-color);
+            border-radius: 8px;
+            padding: 0.8rem 1.5rem;
+            margin: 0 0.3rem;
+            transition: var(--transition);
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .refresh-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .refresh-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        .alert-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--warning-color);
+        }
+
+        .alert-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--warning-color);
+        }
+
+        .alert-text {
+            color: var(--secondary-color);
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            .graph-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="dashboard-title">Fraud Analysis Dashboard</h1>
+                    <p class="dashboard-subtitle">Comprehensive fraud detection and analysis metrics</p>
+                </div>
+                <button class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Navigation -->
+        <nav class="dashboard-nav">
+            <ul class="nav nav-pills justify-content-center">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#overview">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#patterns">Patterns</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#analysis">Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#alerts">Alerts</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Overview Section -->
+        <section id="overview" class="mb-5">
+            <h2 class="section-title">Overview</h2>
+            <div class="row">
+                <!-- Statistics Cards -->
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-chart-line stats-icon"></i>
+                        <div class="stats-value">$2.5M</div>
+                        <div class="stats-label">Total Loss</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-exclamation-triangle stats-icon"></i>
+                        <div class="stats-value">1,234</div>
+                        <div class="stats-label">Active Cases</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-users stats-icon"></i>
+                        <div class="stats-value">5,678</div>
+                        <div class="stats-label">Affected Users</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-shield-alt stats-icon"></i>
+                        <div class="stats-value">89%</div>
+                        <div class="stats-label">Prevention Rate</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Patterns Section -->
+        <section id="patterns" class="mb-5">
+            <h2 class="section-title">Fraud Patterns</h2>
+            <div class="row">
+                <!-- Graph 1 -->
+                <div class="col-lg-6">
+                    <div class="graph-card">
+                        <h2 class="graph-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Transaction Analysis
+                        </h2>
+                        <div class="graph-container">
+                            {{graph1|safe}}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Graph 2 -->
+                <div class="col-lg-6">
+                    <div class="graph-card">
+                        <h2 class="graph-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Fraud Patterns
+                        </h2>
+                        <div class="graph-container">
+                            {{graph2|safe}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section id="analysis" class="mb-5">
+            <h2 class="section-title">Risk Assessment</h2>
+            <div class="row">
+                <!-- Graph 3 -->
+                <div class="col-12">
+                    <div class="graph-card">
+                        <h2 class="graph-title">
+                            <i class="fas fa-chart-line"></i>
+                            Risk Assessment Overview
+                        </h2>
+                        <div class="graph-container">
+                            {{graph3|safe}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alerts Section -->
+        <section id="alerts" class="mb-5">
+            <h2 class="section-title">Recent Alerts</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="alert-card">
+                        <h3 class="alert-title">
+                            <i class="fas fa-exclamation-circle"></i>
+                            High Risk Transaction Detected
+                        </h3>
+                        <p class="alert-text">
+                            Unusual transaction pattern detected in the last hour. Multiple high-value transfers from new accounts.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="alert-card">
+                        <h3 class="alert-title">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Suspicious IP Activity
+                        </h3>
+                        <p class="alert-text">
+                            Multiple login attempts detected from unusual locations. Potential credential stuffing attack in progress.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Add smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add active class to nav items on click
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
